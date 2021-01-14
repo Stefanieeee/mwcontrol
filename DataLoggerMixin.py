@@ -451,12 +451,13 @@ class DataLoggerMixin(LoggerMixin):
             new_file = DataLoggerFile(name=filename, records=self.__index)
 
             with io.StringIO() as mat_stream:
-                mat_writer = csv.writer(mat_stream, delimiter=delimiter)
+                mat_writer = mat.writer(mat_stream, delimiter=delimiter)
                 mat_writer.writerow([i[0] for i in cursor.description])
                 mat_writer.writerows(cursor)
                 new_file.data = mat_stream.getvalue()
 
             self.__files[new_file.name] = new_file
+            savemat(file_name, {})
 
             if clear_database:
                 self.__dump_event.clear()
