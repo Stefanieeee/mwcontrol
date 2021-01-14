@@ -1,4 +1,4 @@
-
+from scipy.io import savemat
 import time
 import threading
 from tinydb import TinyDB, Query
@@ -433,7 +433,40 @@ class DataLoggerMixin(LoggerMixin):
                 cursor.execute(f'DELETE from {self.__table_name}')
                 self.__logger.info(f'Clear SQLITE3 table "{self.__table_name}"')
                 self.__index = 0
+  
+    def __export_to_matlab(self, delimiter: str = ";", clear_database: bool = True): 
+      """Export all recorded data to a matlab file
+   
+    if not self.datalogger_active:
+            self.__logger.error('Export failed: datalogger is not running')
+            return
 
+        filename = f'{self.__table_name}_{int(time.time())}.mat'
+        file = os.path.join(self.data_dir, filename)
+        self.__logger.info(f'Write {self.__table_name} to {filename}')
+
+        if self.datalogger_backend == 'sqlite3':
+            cursor = self.__db_connection.cursor()
+            cursor.execute(f'SELECT * from {self.__table_name}')
+            new_file = DataLoggerFile(name=filename, records=self.__index)
+
+            with io.StringIO() as mat_stream:
+                mat_writer = csv.writer(mat_stream, delimiter=delimiter)
+                mat_writer.writerow([i[0] for i in cursor.description])
+                mat_writer.writerows(cursor)
+                new_file.data = mat_stream.getvalue()
+
+            self.__files[new_file.name] = new_file
+
+            if clear_database:
+                self.__dump_event.clear()
+                cursor.execute(f'DELETE from {self.__table_name}')
+                self.__logger.info(f'Clear SQLITE3 table "{self.__table_name}"')
+                self.__index = 0
+
+   
+   
+   
     @property
     def __start_date(self):
 
