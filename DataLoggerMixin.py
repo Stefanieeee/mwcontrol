@@ -174,10 +174,8 @@ class DataLoggerMixin(LoggerMixin):
     def update_settings(self, settings: dict = {}, *args, **kwargs):
 
         """Update settings
-
         :param settings: A dictionary with all settings for this instance
         :type settings: dict, optional
-
         """
 
         super().update_settings(settings=settings, *args, **kwargs)
@@ -203,9 +201,7 @@ class DataLoggerMixin(LoggerMixin):
     def datalogger_stop(self):
 
         """Stop the datalogger
-
         This will set a flag so the main datalogger loop can react accordingly.
-
         """
 
         if self.datalogger_active:
@@ -217,9 +213,7 @@ class DataLoggerMixin(LoggerMixin):
     def datalogger_start(self):
 
         """Start the datalogger
-
         This will set a flag so the main datalogger loop can react accordingly.
-
         """
 
         if not self.datalogger_active:
@@ -235,9 +229,7 @@ class DataLoggerMixin(LoggerMixin):
     def datalogger_dump(self, delimiter: str = ';', clear_database: bool = True):
 
         """Export all data to a CSV file
-
         This will set a flag so the main datalogger loop can react accordingly.
-
         """
 
         if self.datalogger_active:
@@ -248,10 +240,8 @@ class DataLoggerMixin(LoggerMixin):
     def datalogger_run(self):
 
         """Main datalogger method
-
         This method should be hooked in a thread and the datalogger controlled
         through the start/stop/dump events.
-
         """
 
         self._settings['datalogger']['active'] = self.datalogger_active
@@ -297,7 +287,6 @@ class DataLoggerMixin(LoggerMixin):
     def __setup(self):
 
         """Setup the database based on the configured backend.
-
         """
 
         if self.datalogger_backend == 'sqlite3':
@@ -317,7 +306,6 @@ class DataLoggerMixin(LoggerMixin):
     def __setup_sqlite3(self):
 
         """Create and connect to a memory SQLITE3 database
-
         """
 
         self.__db_connection = sqlite3.connect(':memory:')
@@ -334,10 +322,8 @@ class DataLoggerMixin(LoggerMixin):
     def __add_multiple(self, data: dict = {}):
 
         """Add multiple values to the database
-
         :param data: A dictionary with the data to store. The keys correspond to the column names.
         :type data: dict, optional
-
         """
 
         # Do nothing if datalogger is disabled
@@ -366,10 +352,8 @@ class DataLoggerMixin(LoggerMixin):
     def __close(self, export_data: bool = True):
 
         """Close the database connection
-
         :param export_data: Export all data to CSV before clearing and closing the database. Default is ``True``
         :type export_data: bool, optional.
-
         """
 
         if not self.datalogger_active:
@@ -396,15 +380,12 @@ class DataLoggerMixin(LoggerMixin):
     def __export_to_csv(self, delimiter: str = ";", clear_database: bool = True):
 
         """Export all recorded data to a csv file
-
         :param delimiter: Delimiter for the csv file. Default is ``;``
         :type delimiter: str, optional
         :param clear_database: Delete all entries in the database after export. Default is ``True``
         :type clear_database: bool, optional
-
         The csv file holds all recorded values since the start or the last export of the datalogger.
         Files are stored in ``.__files`` as ``DataLoggerFile`` object.
-
         """
 
         if not self.datalogger_active:
@@ -433,53 +414,42 @@ class DataLoggerMixin(LoggerMixin):
                 cursor.execute(f'DELETE from {self.__table_name}')
                 self.__logger.info(f'Clear SQLITE3 table "{self.__table_name}"')
                 self.__index = 0
-  
-    def __export_to_matlab(self, delimiter: str = ";", clear_database: bool = True): 
+
+    def __export_to_matlab(self, delimiter: str = ";", clear_database: bool = True):
       """Export all recorded data to a matlab file
-   
+      """
     if not self.datalogger_active:
             self.__logger.error('Export failed: datalogger is not running')
             return
-
         filename = f'{self.__table_name}_{int(time.time())}.mat'
         file = os.path.join(self.data_dir, filename)
         self.__logger.info(f'Write {self.__table_name} to {filename}')
-
         if self.datalogger_backend == 'sqlite3':
             cursor = self.__db_connection.cursor()
             cursor.execute(f'SELECT * from {self.__table_name}')
             new_file = DataLoggerFile(name=filename, records=self.__index)
-
             with io.StringIO() as mat_stream:
                 mat_writer = mat.writer(mat_stream, delimiter=delimiter)
                 mat_writer.writerow([i[0] for i in cursor.description])
                 mat_writer.writerows(cursor)
                 new_file.data = mat_stream.getvalue()
-
             self.__files[new_file.name] = new_file
             savemat(file_name, {})
-
             if clear_database:
                 self.__dump_event.clear()
                 cursor.execute(f'DELETE from {self.__table_name}')
                 self.__logger.info(f'Clear SQLITE3 table "{self.__table_name}"')
                 self.__index = 0
 
-   
-   
-   
+
+
     @property
     def __start_date(self):
-
         return self._settings['datalogger']['start_date']
-
     @__start_date.setter
     def __start_date(self, value):
-
         self.__set_start_date(value)
-
     def __set_start_date(self, new_date=None):
-
         """Start the datalogger with a specific time delay
 
         """
@@ -518,7 +488,6 @@ class DataLoggerMixin(LoggerMixin):
     def __set_stop_date(self, new_date=None):
 
         """Limit the duration the datalogger should store values
-
         """
 
         if new_date == self.__stop_date:
@@ -555,10 +524,8 @@ class DataLoggerMixin(LoggerMixin):
     def __set_stop_count(self, new_count: int):
 
         """Limit the number of entries to be recorded in the datalogger
-
         :param new_count: The numbe of entries after which the datalogger should stop
         :type new_count: int
-
         """
 
         if new_count == self.__stop_count:
